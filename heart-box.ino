@@ -31,8 +31,8 @@ PNG png;
 int16_t xpos = 0;
 int16_t ypos = 0;
 
-const char* ssid = "Livebox6-D467";
-const char* password = "v7L3h2x3DK4b";
+const char* ssid = "Redmi Note 9S";
+const char* password = "merions8888";
 const char* render_site = "https://piumanyonya.onrender.com/longPoll";
 
 enum displayState{
@@ -71,7 +71,7 @@ void setClock() {
 }
 
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600); // 115200
   Serial.println("Starting");
   if(!SPIFFS.begin(true)){
     Serial.println("An Error has occurred while mounting SPIFFS");
@@ -114,7 +114,10 @@ void setup(){
 }
 
 void loop(){
+  //Serial.printf("LIGHT_SENSE_PIN::%d\n", analogRead(LIGHT_SENSE_PIN));
+  //Serial.printf("Current state::%d\n", currState);
   if(currState == WAITING_FOR_IMAGE){
+    Serial.println("entered_letsgo waitingforimage");
     pollForImage();
     digitalWrite(BACKLIGHT_PIN, LOW);
   }
@@ -128,13 +131,13 @@ void loop(){
     }
   }
   if(currState == WAITING_TO_DISPLAY_PNG){
-    if(analogRead(LIGHT_SENSE_PIN) < 5){
+    //if(analogRead(LIGHT_SENSE_PIN) < 5){
       digitalWrite(BACKLIGHT_PIN, HIGH);
       showImage();
       currState = DISPLAYING_PNG;
-    }else{
+    /*}else{
       servoWiggle();
-    }
+    }*/
   }
   if(currState == DISPLAYING_GIF){
     showGif(false);
@@ -145,30 +148,34 @@ void loop(){
     }
   }
   if(currState == DISPLAYING_PNG){
+    delay(3000); // cuanto tiempo se queda imagen en pantalla en ms
     // showImage();
-    if(analogRead(LIGHT_SENSE_PIN) > 5){
+    Serial.println("entered sdisplay_png suu");
+    //if(analogRead(LIGHT_SENSE_PIN) > 5){
       currState = WAITING_FOR_IMAGE;
       tft.fillScreen(TFT_BLACK);
       ledcWrite(0, pulseWidth(MID_POS));
-    }
+    //}
   }
 }
 
 void pollForImage(){
   WiFiClientSecure *client = new WiFiClientSecure;
+  Serial.println("Setting up wifi client");
   if(client) {
     client->setInsecure();
+    Serial.println("Client found");
 
     {
        HTTPClient http;
 
-        // Serial.print("[HTTP] begin...\n");
+         Serial.print("[HTTP] begin...\n");
 
         // configure server and url
         http.begin(*client,render_site);
         
 
-        // Serial.print("[HTTP] GET...\n");
+         Serial.print("[HTTP] GET...\n");
         // start connection and send HTTP header
         const char *headerKeys[] = {"imgname"};
         const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
@@ -255,7 +262,7 @@ void showGif(bool clearScreen){
     tft.fillScreen(TFT_BLACK);
     }
   Serial.println("Displaying GIF");
-  if (gif.open("/image.gif", fileOpen, fileClose, fileRead, fileSeek, GIFDraw))
+  /*if (gif.open("/image.gif", fileOpen, fileClose, fileRead, fileSeek, GIFDraw))
   {
   tft.startWrite(); // The TFT chip slect is locked low
   int frameRes;
@@ -267,7 +274,7 @@ void showGif(bool clearScreen){
   tft.endWrite(); // Release TFT chip select for the SD Card Reader
 }else{
     Serial.println("/image.gif did not work");
-  }
+  }*/
 }
 
 void showImage(){
